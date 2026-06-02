@@ -10,6 +10,8 @@ export interface InfographicFormData {
   tone: string;
   bahasa: string;
   rasio: string;
+  customWidthCm?: string;
+  customHeightCm?: string;
   gayaDesain: string;
   warnaDominan: string;
   styleIcon: string;
@@ -30,7 +32,7 @@ export const OPTIONS = {
   audiens: ['Anak-anak', 'Remaja', 'Dewasa', 'Profesional', 'Umum', 'Lainnya'],
   tone: ['Edukatif', 'Profesional', 'Friendly', 'Persuasif', 'Santai', 'Islami', 'Formal', 'Custom'],
   bahasa: ['Indonesia', 'Inggris', 'Arab', 'China', 'Jepang', 'Rusia', 'Melayu', 'Lainnya'],
-  rasio: ['1:1 (Square)', '3:4 (Portrait)', '4:5 (Instagram)', '9:16 (Story/Reels)', '16:9 (Widescreen)', 'A4 Vertikal', 'A4 Horisontal', 'Hero website 1920 x 1080 px', 'A3+ Horisontal', 'A3+ Vertikal'],
+  rasio: ['1:1 (Square)', '3:4 (Portrait)', '4:5 (Instagram)', '9:16 (Story/Reels)', '16:9 (Widescreen)', 'A4 Vertikal', 'A4 Horisontal', 'Hero website 1920 x 1080 px', 'A3+ Horisontal', 'A3+ Vertikal', 'Custom (Banner/Spanduk cm, 300 DPI)'],
   gayaDesain: ['Modern', 'Minimalis', 'Flat', 'Corporate', 'Neon', 'Futuristik', 'Pastel', 'Bold', 'Clean', 'Vintage', 'Kartun', 'Komik', 'Manga / Anime', 'Pop Art', 'Doodle'],
   styleIcon: ['Outline (Garis)', 'Line Art', 'Flat 2D', '3D Rendered', 'Gradient', 'Filled (Solid)', 'Minimalist'],
   layout: ['Vertikal Panjang (Standart)', 'Square', 'Carousel (Slide by Slide)', 'Timeline', 'Grid', 'Step by step', 'Comparison (Perbandingan)', 'Custom'],
@@ -54,6 +56,8 @@ export const INITIAL_STATE: InfographicFormData = {
   tone: 'Edukatif',
   bahasa: 'Indonesia',
   rasio: '4:5 (Instagram)',
+  customWidthCm: '',
+  customHeightCm: '',
   gayaDesain: 'Modern',
   warnaDominan: '',
   styleIcon: 'Flat 2D',

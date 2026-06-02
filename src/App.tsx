@@ -46,7 +46,7 @@ export default function App() {
 
   const generatePrompt = () => {
     const {
-      tema, tujuan, audiens, tone, bahasa, rasio, gayaDesain, warnaDominan,
+      tema, tujuan, audiens, tone, bahasa, rasio, customWidthCm, customHeightCm, gayaDesain, warnaDominan,
       styleIcon, elemenVisual, layout, poin, namaBrand, tagline, sosmed,
       whatsapp, logoStyle, levelDetail, formatOutput
     } = formData;
@@ -79,39 +79,58 @@ export default function App() {
     basePrompt += `Text language context: ${bahasa}. (Ensure any mock text or structure aligns with this language). `;
     
     // Spesifikasi Kualitas Positif yang diperbarui sesuai permintaan
-    const positiveQuality = "ultra high resolution, ultra sharp, sharp focus, high definition, 16K quality, clean details, crisp edges, clean texture, smooth lighting, professional rendering, print-ready design, perfectly sharp, clear and legible text, no pixelation";
+    const positiveQuality = "ultra high resolution, ultra hd, ultra sharp, sharp focus, high definition, 16K quality, clean details, crisp edges, clean texture, smooth lighting, professional rendering, print-ready design, perfectly sharp, clear and legible text";
     
     // Spesifikasi Kualitas Negatif (Hindari) yang diperbarui sesuai permintaan
-    const negativePrompt = "--no blur, low resolution, pixelated, noise, compression artifacts, distorted face, wrong text, broken logo, messy details, overexposed lighting, bad anatomy";
+    const negativePrompt = "--no pixelation, blur, low resolution, pixelated, noise, compression artifacts, distorted face, wrong text, broken logo, messy details, overexposed lighting, bad anatomy";
 
     basePrompt += `Quality specs: ${positiveQuality}. `;
 
     // Aspect ratio mapping for Midjourney
     let arString = "";
-    if (rasio.includes('1:1')) arString = "--ar 1:1";
-    if (rasio.includes('3:4')) arString = "--ar 3:4";
-    if (rasio.includes('4:5')) arString = "--ar 4:5";
-    if (rasio.includes('9:16')) arString = "--ar 9:16";
-    if (rasio.includes('16:9')) arString = "--ar 16:9";
-    if (rasio.includes('A4 Vertikal')) arString = "--ar 2:3";
-    if (rasio.includes('A4 Horisontal')) arString = "--ar 3:2";
-    if (rasio.includes('Hero website')) arString = "--ar 16:9";
-    if (rasio.includes('A3+ Horisontal')) arString = "--ar 19:13";
-    if (rasio.includes('A3+ Vertikal')) arString = "--ar 13:19";
+    if (rasio === 'Custom (Banner/Spanduk cm, 300 DPI)') {
+      const w = parseInt(customWidthCm || '100');
+      const h = parseInt(customHeightCm || '100');
+      if (!isNaN(w) && !isNaN(h) && w > 0 && h > 0) {
+        const gcd = (a: number, b: number): number => b === 0 ? a : gcd(b, a % b);
+        const divisor = gcd(w, h);
+        const simplifiedW = Math.round(w / divisor);
+        const simplifiedH = Math.round(h / divisor);
+        arString = `--ar ${simplifiedW}:${simplifiedH}`;
+        basePrompt += `Print size: Custom layout measuring ${w}cm width by ${h}cm height at extreme-definition printable 300 DPI. `;
+      } else {
+        arString = "--ar 16:9";
+        basePrompt += `Print size: Custom high-resolution banner layout at printable 300 DPI. `;
+      }
+    } else {
+      if (rasio.includes('1:1')) arString = "--ar 1:1";
+      if (rasio.includes('3:4')) arString = "--ar 3:4";
+      if (rasio.includes('4:5')) arString = "--ar 4:5";
+      if (rasio.includes('9:16')) arString = "--ar 9:16";
+      if (rasio.includes('16:9')) arString = "--ar 16:9";
+      if (rasio.includes('A4 Vertikal')) arString = "--ar 2:3";
+      if (rasio.includes('A4 Horisontal')) arString = "--ar 3:2";
+      if (rasio.includes('Hero website')) arString = "--ar 16:9";
+      if (rasio.includes('A3+ Horisontal')) arString = "--ar 19:13";
+      if (rasio.includes('A3+ Vertikal')) arString = "--ar 13:19";
+    }
 
     // Menyusun hasil akhir berdasarkan level detail
     if (levelDetail === 'Sangat Detail') {
       basePrompt += `${arString} --v 6.0 ${negativePrompt}`;
     } else if (levelDetail === 'Sedang') {
-      basePrompt = `An infographic about "${fallbackTema}", ${gayaDesain} style, colors: ${fallbackWarna}. Layout: ${layout} with ${poin} sections. Include ${styleIcon} icons. Quality: ultra high resolution, ultra sharp, 16K quality, clean details, professional rendering. ${arString} --v 6.0 ${negativePrompt}`;
+      basePrompt = `An infographic about "${fallbackTema}", ${gayaDesain} style, colors: ${fallbackWarna}. Layout: ${layout} with ${poin} sections. Include ${styleIcon} icons. Quality: ${positiveQuality}. ${arString} --v 6.0 ${negativePrompt}`;
     } else if (levelDetail === 'Biasa') {
-      basePrompt = `Infographic: "${fallbackTema}", ${gayaDesain}, ${fallbackWarna}, ${layout}. 16K quality, ultra sharp, clear text. ${arString} --v 6.0 ${negativePrompt}`;
+      basePrompt = `Infographic: "${fallbackTema}", ${gayaDesain}, ${fallbackWarna}, ${layout}. Quality: ${positiveQuality}. ${arString} --v 6.0 ${negativePrompt}`;
     }
 
     let finalOutput = `[Instruksi untuk AI Image Generator (Midjourney/DALL-E 3)]\n\n${basePrompt}\n\n`;
     
+    finalOutput += `[Verifikasi Akurasi Data & Fakta Terbaru]\n`;
+    finalOutput += `• PENTING: Lakukan verifikasi silang (double-check) terhadap seluruh data, persentase, data statistik, informasi numerik, dan fakta sejarah/berita yang dimasukkan agar sepenuhnya akurat dan selaras dengan liputan berita terkini. Hindari data usang atau informasi spekulatif.\n\n`;
+
     if (formatOutput.includes('JSON')) {
-      finalOutput += `\n\n[Format Struktur Konten JSON yang disarankan]\n{\n  "judul": "${fallbackTema}",\n  "warna": "${fallbackWarna}",\n  "layout": "${layout}",\n  "bagian": [\n    // AI, generate ${poin} data points here\n  ]\n}`;
+      finalOutput += `[Format Struktur Konten JSON yang disarankan]\n{\n  "judul": "${fallbackTema}",\n  "warna": "${fallbackWarna}",\n  "layout": "${layout}",\n  "bagian": [\n    // AI, generate ${poin} data points di sini. Selalu double-check data agar akurat dengan berita terkini!\n  ]\n}`;
     }
 
     setGeneratedPrompt(finalOutput);
@@ -149,13 +168,20 @@ export default function App() {
     const randomElementsCount = Math.floor(Math.random() * 3) + 2;
     const selectedElements = shuffledElements.slice(0, randomElementsCount);
 
+    const pickedRasio = randomItem(OPTIONS.rasio);
+    const isCustom = pickedRasio === 'Custom (Banner/Spanduk cm, 300 DPI)';
+    const customWidthCm = isCustom ? String(Math.floor(Math.random() * 200) + 100) : '';
+    const customHeightCm = isCustom ? String(Math.floor(Math.random() * 100) + 50) : '';
+
     setFormData({
       tema: randomItem(randomThemes),
       tujuan: randomItem(OPTIONS.tujuan),
       audiens: randomItem(OPTIONS.audiens),
       tone: randomItem(OPTIONS.tone),
       bahasa: randomItem(OPTIONS.bahasa),
-      rasio: randomItem(OPTIONS.rasio),
+      rasio: pickedRasio,
+      customWidthCm,
+      customHeightCm,
       gayaDesain: randomItem(OPTIONS.gayaDesain),
       warnaDominan: randomItem(randomColors),
       styleIcon: randomItem(OPTIONS.styleIcon),
@@ -222,6 +248,23 @@ export default function App() {
                   }
                   return <span key={pIdx}>{part}</span>;
                 })}
+              </div>
+            );
+          }
+
+          if (line.startsWith('[Verifikasi')) {
+            return (
+              <div key={idx} className="text-rose-400 font-extrabold tracking-wide mt-4 mb-2 flex items-center gap-2">
+                <Flame size={16} className="text-rose-500 animate-pulse" />
+                {line}
+              </div>
+            );
+          }
+
+          if (line.startsWith('• PENTING:')) {
+            return (
+              <div key={idx} className="text-rose-300 font-semibold bg-rose-500/10 border border-rose-500/20 p-4 rounded-xl my-3 pl-4 leading-relaxed">
+                {line}
               </div>
             );
           }
@@ -414,6 +457,46 @@ export default function App() {
                     </select>
                     <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-slate-400 text-[10px]">▼</div>
                   </div>
+
+                  <AnimatePresence>
+                    {formData.rasio === 'Custom (Banner/Spanduk cm, 300 DPI)' && (
+                      <motion.div 
+                        initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                        animate={{ opacity: 1, height: 'auto', marginTop: 12 }}
+                        exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                        className="grid grid-cols-2 gap-3 overflow-hidden bg-orange-500/5 p-3 rounded-2xl border border-orange-500/10"
+                      >
+                        <div>
+                          <label className="text-[9px] font-black uppercase text-orange-600 mb-1 block tracking-wider">Lebar Spanduk (cm)</label>
+                          <input 
+                            type="number" 
+                            name="customWidthCm" 
+                            value={formData.customWidthCm || ''} 
+                            onChange={handleInputChange} 
+                            min="1"
+                            className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold focus:ring-2 focus:ring-orange-500/20 outline-none text-slate-800"
+                            placeholder="Contoh: 300" 
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[9px] font-black uppercase text-orange-600 mb-1 block tracking-wider">Tinggi Spanduk (cm)</label>
+                          <input 
+                            type="number" 
+                            name="customHeightCm" 
+                            value={formData.customHeightCm || ''} 
+                            onChange={handleInputChange} 
+                            min="1"
+                            className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold focus:ring-2 focus:ring-orange-500/20 outline-none text-slate-800"
+                            placeholder="Contoh: 100" 
+                          />
+                        </div>
+                        <div className="col-span-2 text-[9px] text-orange-700/90 font-bold flex items-center gap-1.5 justify-center leading-snug">
+                          <Flame size={12} className="text-orange-500 flex-shrink-0 animate-pulse" />
+                          <span>Rendering dioptimasi untuk Banner 300 DPI</span>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
 
                 <div>
@@ -662,7 +745,11 @@ export default function App() {
               </span>
             </div>
             <div className="flex gap-4 font-black uppercase text-[10px] text-slate-400">
-              <span>Ratio: <b className="text-slate-600">{formData.rasio}</b></span>
+              <span>Ratio: <b className="text-slate-600">
+                {formData.rasio === 'Custom (Banner/Spanduk cm, 300 DPI)' 
+                  ? `Custom ${formData.customWidthCm || '100'}x${formData.customHeightCm || '100'} cm (300 DPI)` 
+                  : formData.rasio}
+              </b></span>
               <span>Style: <b className="text-slate-600">{formData.gayaDesain}</b></span>
               <span>Warna: <b className="text-slate-600">{formData.warnaDominan || "Automated"}</b></span>
             </div>
